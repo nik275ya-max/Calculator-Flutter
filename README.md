@@ -1,17 +1,50 @@
-# calculator_app
+﻿# Calculator for Magicians
 
-A new Flutter project.
+Flutter-приложение калькулятора, стилизованное под iPhone Calculator, с секретными функциями для фокусов.
 
-## Getting Started
+## Что умеет
 
-This project is a starting point for a Flutter application.
+### Обычный режим
+- Все стандартные операции: `+`, `-`, `×`, `÷`, `=`
+- Кнопки `AC`, `%`, `+/-`, `.`
+- Ввод до 8 цифр на экране
 
-A few resources to get you started if this is your first Flutter project:
+### Секретные функции (для фокусов)
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+**Кнопка `÷` — "Предсказание числа"**
+1. Зритель вводит любое число
+2. Вы нажимаете `÷`
+3. Через 1 секунду появляется "загаданное" число
+4. Формула: `(день + месяц + часы + минуты) - введённое число + 1`
+5. Калькулятор блокируется на 7 секунд
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+**Длительное нажатие на `+` — "Блокировка"**
+1. Удерживайте `+` 5 секунд
+2. Калькулятор показывает секретный результат и блокируется на 5 секунд
+3. Нажмите `AC` для разблокировки
+
+**Длительное нажатие на `%` — "Настройки"**
+1. Удерживайте `%` 2 секунды
+2. Откроется меню настроек
+3. Можно ввести своё число вместо автоматического (дата+время)
+
+## Технологии
+- Flutter 3.44
+- Dart
+- Нативная сборка для Android
+
+## Установка
+1. Скачайте `app-release.apk` из релизов
+2. Установите на Android-устройство
+3. Разрешите установку из неизвестных источников
+
+## Запуск из исходников
+```bash
+flutter pub get
+flutter run
+```
+
+## Сборка APK
+```bash
+flutter build apk --release
+```
