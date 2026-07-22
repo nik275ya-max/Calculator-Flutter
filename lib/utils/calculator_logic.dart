@@ -25,6 +25,7 @@ class CalculatorLogic {
   bool _isTextMode = false;
   String _customText = '';
   CardSuit _selectedSuit = CardSuit.hearts;
+  String _pendingText = '';
 
   // 3 independent booleans
   bool _isBlocked = false;
@@ -112,6 +113,7 @@ class CalculatorLogic {
 
     _display = '0';
     _textResult = '';
+    _pendingText = '';
     _previousValue = null;
     _operation = null;
     _waitingForOperand = false;
@@ -123,11 +125,7 @@ class CalculatorLogic {
     if (_isBlocked || _isDivisionBlocked || _isPartiallyBlocked) return;
 
     if (_isTextMode) {
-      // Show text: custom text or suit symbol
-      final text = _customText.isNotEmpty ? _customText : _selectedSuit.symbol;
-      _textResult = text;
-      _waitingForOperand = true;
-      _notify();
+      _pendingText = _customText.isNotEmpty ? _customText : _selectedSuit.symbol;
       return;
     }
 
@@ -176,6 +174,15 @@ class CalculatorLogic {
 
   void executeCalculation() {
     if (_isBlocked || _isDivisionBlocked) return;
+
+    // Show pending text from +/- button (once)
+    if (_pendingText.isNotEmpty) {
+      _textResult = _pendingText;
+      _pendingText = '';
+      _waitingForOperand = true;
+      _notify();
+      return;
+    }
 
     final inputValue = double.tryParse(_display) ?? 0;
 
