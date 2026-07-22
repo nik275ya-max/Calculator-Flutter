@@ -1,7 +1,19 @@
 import 'dart:async';
 
+enum CardSuit {
+  hearts('♥', 'Черви'),
+  diamonds('♦', 'Бубны'),
+  clubs('♣', 'Трефы'),
+  spades('♠', 'Пики');
+
+  final String symbol;
+  final String name;
+  const CardSuit(this.symbol, this.name);
+}
+
 class CalculatorLogic {
   String _display = '0';
+  String _textResult = '';
   double? _previousValue;
   String? _operation;
   bool _waitingForOperand = false;
@@ -9,7 +21,12 @@ class CalculatorLogic {
   bool _useCustomNumber = false;
   String _customNumber = '';
 
-  // 3 independent booleans — exact match of the original web app
+  // Text mode
+  bool _isTextMode = false;
+  String _customText = '';
+  CardSuit _selectedSuit = CardSuit.hearts;
+
+  // 3 independent booleans
   bool _isBlocked = false;
   bool _isDivisionBlocked = false;
   bool _isPartiallyBlocked = false;
@@ -22,7 +39,7 @@ class CalculatorLogic {
 
   Function()? onStateChanged;
 
-  String get display => _display;
+  String get display => _textResult.isNotEmpty ? _textResult : _display;
   bool get isSpecialMode => _isSpecialMode;
   bool get useCustomNumber => _useCustomNumber;
   String get customNumber => _customNumber;
@@ -31,9 +48,28 @@ class CalculatorLogic {
   bool get isDivisionBlocked => _isDivisionBlocked;
   bool get isPartiallyBlocked => _isPartiallyBlocked;
 
+  bool get isTextMode => _isTextMode;
+  String get customText => _customText;
+  CardSuit get selectedSuit => _selectedSuit;
+  bool get showingText => _textResult.isNotEmpty;
+
+  String get displayText => _textResult;
+
   void setCustomNumber(bool use, String number) {
     _useCustomNumber = use;
     _customNumber = number;
+  }
+
+  void setTextMode(bool enabled) {
+    _isTextMode = enabled;
+  }
+
+  void setCustomText(String text) {
+    _customText = text;
+  }
+
+  void setCardSuit(CardSuit suit) {
+    _selectedSuit = suit;
   }
 
   void _notify() {
@@ -42,6 +78,11 @@ class CalculatorLogic {
 
   void inputDigit(String digit) {
     if (_isBlocked || _isDivisionBlocked || _isPartiallyBlocked) return;
+
+    // Clear text result on new input
+    if (_textResult.isNotEmpty) {
+      _textResult = '';
+    }
 
     if (_waitingForOperand) {
       _display = digit;
@@ -53,6 +94,10 @@ class CalculatorLogic {
 
   void inputDecimal() {
     if (_isBlocked || _isDivisionBlocked || _isPartiallyBlocked) return;
+
+    if (_textResult.isNotEmpty) {
+      _textResult = '';
+    }
 
     if (_waitingForOperand) {
       _display = '0.';
@@ -66,11 +111,33 @@ class CalculatorLogic {
     if (_isBlocked || _isDivisionBlocked) return;
 
     _display = '0';
+    _textResult = '';
     _previousValue = null;
     _operation = null;
     _waitingForOperand = false;
     _isSpecialMode = false;
     _isPartiallyBlocked = false;
+  }
+
+  void toggleSign() {
+    if (_isBlocked || _isDivisionBlocked || _isPartiallyBlocked) return;
+
+    if (_isTextMode) {
+      // Show text: custom text or suit symbol
+      final text = _customText.isNotEmpty ? _customText : _selectedSuit.symbol;
+      _textResult = text;
+      _waitingForOperand = true;
+      _notify();
+      return;
+    }
+
+    if (_display != '0') {
+      if (_display.startsWith('-')) {
+        _display = _display.substring(1);
+      } else {
+        _display = '-$_display';
+      }
+    }
   }
 
   double _calculate(double first, double second, String op) {
@@ -145,11 +212,9 @@ class CalculatorLogic {
   void performDivisionOperation() {
     if (_isBlocked || _isDivisionBlocked || _isPartiallyBlocked) return;
 
-    // Original: setIsDivisionBlocked(true) + setIsPartiallyBlocked(true)
     _isDivisionBlocked = true;
     _isPartiallyBlocked = true;
 
-    // 1 second delay before showing result
     _divisionResultTimer?.cancel();
     _divisionResultTimer = Timer(const Duration(seconds: 1), () {
       final currentValue = double.tryParse(_display) ?? 0;
@@ -164,11 +229,11 @@ class CalculatorLogic {
       }
 
       _display = _formatResult(result);
+      _textResult = '';
       _waitingForOperand = true;
       _notify();
     });
 
-    // 7 seconds: full unblock
     _divisionBlockTimer?.cancel();
     _divisionBlockTimer = Timer(const Duration(seconds: 7), () {
       _isDivisionBlocked = false;
@@ -178,14 +243,12 @@ class CalculatorLogic {
   }
 
   void startPlusLongPress() {
-    // 2 seconds → then 3 more seconds → total 5 seconds to trigger
     _longPressTimer = Timer(const Duration(seconds: 2), () {
       _blockTimer = Timer(const Duration(seconds: 3), () {
         _isBlocked = true;
         _performSpecialOperation();
         _notify();
 
-        // 5 seconds of full block
         _unblockTimer = Timer(const Duration(seconds: 5), () {
           _isBlocked = false;
           _notify();

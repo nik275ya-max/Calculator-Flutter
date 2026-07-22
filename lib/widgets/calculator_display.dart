@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CalculatorDisplay extends StatelessWidget {
   final String value;
   final bool isBlocked;
+  final bool isTextMode;
 
   const CalculatorDisplay({
     super.key,
     required this.value,
     this.isBlocked = false,
+    this.isTextMode = false,
   });
 
   @override
@@ -24,7 +26,7 @@ class CalculatorDisplay extends StatelessWidget {
         style: TextStyle(
           color: Colors.white,
           fontSize: fontSize,
-          fontWeight: FontWeight.w300,
+          fontWeight: isTextMode ? FontWeight.w400 : FontWeight.w300,
           height: 1.1,
         ),
         maxLines: 1,
@@ -34,6 +36,12 @@ class CalculatorDisplay extends StatelessWidget {
   }
 
   double _calculateFontSize(double screenWidth) {
+    if (isTextMode) {
+      if (value.length <= 4) return 80;
+      if (value.length <= 8) return 56;
+      if (value.length <= 12) return 40;
+      return 32;
+    }
     if (value.length <= 6) return 80;
     if (value.length <= 8) return 64;
     if (value.length <= 10) return 52;

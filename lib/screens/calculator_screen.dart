@@ -15,6 +15,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   final CalculatorLogic _logic = CalculatorLogic();
   bool _showSettings = false;
   final TextEditingController _customNumberController = TextEditingController();
+  final TextEditingController _customTextController = TextEditingController();
   Timer? _percentLongPressTimer;
 
   @override
@@ -30,6 +31,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   void dispose() {
     _logic.dispose();
     _customNumberController.dispose();
+    _customTextController.dispose();
     _percentLongPressTimer?.cancel();
     super.dispose();
   }
@@ -110,10 +112,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
           children: [
             // Header
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(color: Color(0xFF374151), width: 0.5),
+                  bottom:
+                      BorderSide(color: Color(0xFF374151), width: 0.5),
                 ),
               ),
               child: Row(
@@ -152,14 +156,170 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
             // Content
             Expanded(
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 24),
 
-                    // Toggle
+                    // --- Text mode toggle ---
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'Текстовый режим',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ),
+                        Switch(
+                          value: _logic.isTextMode,
+                          onChanged: (value) {
+                            _logic.setTextMode(value);
+                            _updateState();
+                          },
+                          activeThumbColor: const Color(0xFFF97316),
+                          activeTrackColor: const Color(0xFFF97316),
+                        ),
+                      ],
+                    ),
+                    const Text(
+                      'При нажатии +/- в поле появится текст',
+                      style: TextStyle(
+                        color: Color(0xFF9CA3AF),
+                        fontSize: 14,
+                      ),
+                    ),
+
+                    if (_logic.isTextMode) ...[
+                      const SizedBox(height: 20),
+
+                      // --- Custom text input ---
+                      const Text(
+                        'Свой текст',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _customTextController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: InputDecoration(
+                          hintText: 'Введите текст',
+                          hintStyle:
+                              const TextStyle(color: Color(0xFF6B7280)),
+                          filled: true,
+                          fillColor: const Color(0xFF1F2937),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF4B5563)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF4B5563)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFF97316)),
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        onChanged: (value) {
+                          _logic.setCustomText(value);
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // --- Card suit picker ---
+                      const Text(
+                        'Или выберите масть',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: CardSuit.values.map((suit) {
+                          final isSelected =
+                              _logic.selectedSuit == suit;
+                          return GestureDetector(
+                            onTap: () {
+                              _logic.setCardSuit(suit);
+                              // Append suit symbol to text field
+                              _customTextController.text += suit.symbol;
+                              _logic.setCustomText(_customTextController.text);
+                              _updateState();
+                            },
+                            child: Container(
+                              width: 70,
+                              height: 90,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF374151)
+                                    : const Color(0xFF1F2937),
+                                borderRadius:
+                                    BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? const Color(0xFFF97316)
+                                      : const Color(0xFF4B5563),
+                                  width: 2,
+                                ),
+                              ),
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    suit.symbol,
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      color: suit == CardSuit.hearts ||
+                                              suit == CardSuit.diamonds
+                                          ? const Color(0xFFEF4444)
+                                          : Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    suit.name,
+                                    style: const TextStyle(
+                                      color: Color(0xFF9CA3AF),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 12),
+                      Text(
+                        'Текущий выбор: ${_logic.customText.isNotEmpty ? _logic.customText : _logic.selectedSuit.symbol}',
+                        style: const TextStyle(
+                          color: Color(0xFFF97316),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 32),
+
+                    // --- Custom number (existing) ---
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -184,9 +344,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 8),
-
                     const Text(
                       'Заменить автоматическое число (дата+время) на свое',
                       style: TextStyle(
@@ -194,7 +351,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         fontSize: 14,
                       ),
                     ),
-
                     if (_logic.useCustomNumber) ...[
                       const SizedBox(height: 16),
                       TextField(
@@ -203,23 +359,24 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         style: const TextStyle(color: Colors.white),
                         decoration: InputDecoration(
                           hintText: 'Введите число',
-                          hintStyle: const TextStyle(color: Color(0xFF6B7280)),
+                          hintStyle:
+                              const TextStyle(color: Color(0xFF6B7280)),
                           filled: true,
                           fillColor: const Color(0xFF1F2937),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF4B5563)),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF4B5563)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                const BorderSide(color: Color(0xFF4B5563)),
+                            borderSide: const BorderSide(
+                                color: Color(0xFF4B5563)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:
-                                const BorderSide(color: Color(0xFFF97316)),
+                            borderSide: const BorderSide(
+                                color: Color(0xFFF97316)),
                           ),
                           contentPadding: const EdgeInsets.all(16),
                         ),
@@ -242,7 +399,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     final isBlocked = _logic.isBlocked;
     final isDivisionBlocked = _logic.isDivisionBlocked;
     final isPartiallyBlocked = _logic.isPartiallyBlocked;
-    final anyBlocked = isBlocked || isDivisionBlocked || isPartiallyBlocked;
+    final anyBlocked =
+        isBlocked || isDivisionBlocked || isPartiallyBlocked;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -257,10 +415,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                   child: Align(
                     alignment: Alignment.bottomRight,
                     child: Padding(
-                      padding: const EdgeInsets.only(bottom: 16, right: 24),
+                      padding:
+                          const EdgeInsets.only(bottom: 16, right: 24),
                       child: CalculatorDisplay(
                         value: _logic.display,
                         isBlocked: isBlocked,
+                        isTextMode: _logic.showingText,
                       ),
                     ),
                   ),
@@ -276,7 +436,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       children: [
                         // Row 1: AC, +/-, %, ÷
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
                           children: [
                             CalculatorButton(
                               text: 'AC',
@@ -290,14 +451,18 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                               text: '+/-',
                               variant: ButtonVariant.secondary,
                               disabled: anyBlocked,
-                              onPressed: () {},
+                              onPressed: () {
+                                _logic.toggleSign();
+                                _updateState();
+                              },
                             ),
                             CalculatorButton(
                               text: '%',
                               variant: ButtonVariant.secondary,
                               disabled: anyBlocked,
                               onPressed: () {},
-                              onLongPressStart: _onPercentLongPressStart,
+                              onLongPressStart:
+                                  _onPercentLongPressStart,
                               onLongPressEnd: _onPercentLongPressEnd,
                             ),
                             CalculatorButton(
@@ -313,110 +478,132 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
                         // Row 2: 7, 8, 9, ×
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
                           children: [
                             CalculatorButton(
                               text: '7',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('7'),
+                              onPressed: () =>
+                                  _onButtonPressed('7'),
                             ),
                             CalculatorButton(
                               text: '8',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('8'),
+                              onPressed: () =>
+                                  _onButtonPressed('8'),
                             ),
                             CalculatorButton(
                               text: '9',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('9'),
+                              onPressed: () =>
+                                  _onButtonPressed('9'),
                             ),
                             CalculatorButton(
                               text: '×',
                               variant: ButtonVariant.operator,
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('×'),
+                              onPressed: () =>
+                                  _onButtonPressed('×'),
                             ),
                           ],
                         ),
 
                         // Row 3: 4, 5, 6, -
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
                           children: [
                             CalculatorButton(
                               text: '4',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('4'),
+                              onPressed: () =>
+                                  _onButtonPressed('4'),
                             ),
                             CalculatorButton(
                               text: '5',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('5'),
+                              onPressed: () =>
+                                  _onButtonPressed('5'),
                             ),
                             CalculatorButton(
                               text: '6',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('6'),
+                              onPressed: () =>
+                                  _onButtonPressed('6'),
                             ),
                             CalculatorButton(
                               text: '-',
                               variant: ButtonVariant.operator,
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('-'),
+                              onPressed: () =>
+                                  _onButtonPressed('-'),
                             ),
                           ],
                         ),
 
                         // Row 4: 1, 2, 3, +
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
                           children: [
                             CalculatorButton(
                               text: '1',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('1'),
+                              onPressed: () =>
+                                  _onButtonPressed('1'),
                             ),
                             CalculatorButton(
                               text: '2',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('2'),
+                              onPressed: () =>
+                                  _onButtonPressed('2'),
                             ),
                             CalculatorButton(
                               text: '3',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('3'),
+                              onPressed: () =>
+                                  _onButtonPressed('3'),
                             ),
                             CalculatorButton(
                               text: '+',
                               variant: ButtonVariant.operator,
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('+'),
-                              onLongPressStart: _onPlusLongPressStart,
-                              onLongPressEnd: _onPlusLongPressEnd,
+                              onPressed: () =>
+                                  _onButtonPressed('+'),
+                              onLongPressStart:
+                                  _onPlusLongPressStart,
+                              onLongPressEnd:
+                                  _onPlusLongPressEnd,
                             ),
                           ],
                         ),
 
                         // Row 5: 0, ., =
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceEvenly,
                           children: [
                             CalculatorButton(
                               text: '0',
                               variant: ButtonVariant.zero,
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('0'),
+                              onPressed: () =>
+                                  _onButtonPressed('0'),
                             ),
                             CalculatorButton(
                               text: '.',
                               disabled: anyBlocked,
-                              onPressed: () => _onButtonPressed('.'),
+                              onPressed: () =>
+                                  _onButtonPressed('.'),
                             ),
                             CalculatorButton(
                               text: '=',
                               variant: ButtonVariant.operator,
-                              disabled: isBlocked || isDivisionBlocked,
-                              onPressed: () => _onButtonPressed('='),
+                              disabled:
+                                  isBlocked || isDivisionBlocked,
+                              onPressed: () =>
+                                  _onButtonPressed('='),
                             ),
                           ],
                         ),
