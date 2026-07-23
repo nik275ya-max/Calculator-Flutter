@@ -6,6 +6,9 @@ class SensorService {
   StreamSubscription? _accelerometerSubscription;
   bool _enabled = false;
   DateTime? _lastShakeTime;
+  double _prevX = 0;
+  double _prevY = 0;
+  double _prevZ = 0;
 
   Function()? onShakeDetected;
 
@@ -15,11 +18,15 @@ class SensorService {
     _lastShakeTime = null;
 
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
-      final acceleration = sqrt(
-        event.x * event.x + event.y * event.y + event.z * event.z,
-      );
+      final dx = (event.x - _prevX).abs();
+      final dy = (event.y - _prevY).abs();
+      final dz = (event.z - _prevZ).abs();
+      _prevX = event.x;
+      _prevY = event.y;
+      _prevZ = event.z;
 
-      if (acceleration > 28) {
+      final delta = dx + dy + dz;
+      if (delta > 15) {
         final now = DateTime.now();
         if (_lastShakeTime == null || now.difference(_lastShakeTime!) > const Duration(seconds: 3)) {
           _lastShakeTime = now;
