@@ -27,29 +27,33 @@ class CalculatorButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: disabled ? null : (_) => onLongPressStart?.call(),
-      onTapUp: disabled ? null : (_) => onLongPressEnd?.call(),
-      onTapCancel: onLongPressEnd,
+    return Listener(
+      onPointerDown: disabled ? null : (_) => onLongPressStart?.call(),
+      onPointerUp: disabled ? null : (_) => onLongPressEnd?.call(),
+      onPointerCancel: (_) => onLongPressEnd?.call(),
       child: SizedBox(
         height: 80,
         width: variant == ButtonVariant.zero ? 170 : 80,
-        child: ElevatedButton(
-          onPressed: disabled ? null : onPressed,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _getBackgroundColor(),
-            foregroundColor: _getTextColor(),
-            disabledBackgroundColor: _getDisabledBackgroundColor(),
-            disabledForegroundColor: _getDisabledTextColor(),
-            padding: EdgeInsets.zero,
-            shape: const StadiumBorder(),
-            elevation: 0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: disabled ? _getDisabledBackgroundColor() : _getBackgroundColor(),
+            borderRadius: const BorderRadius.all(Radius.circular(40)),
           ),
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: variant == ButtonVariant.zero ? 30 : 34,
-              fontWeight: FontWeight.w400,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: disabled ? null : onPressed,
+              borderRadius: const BorderRadius.all(Radius.circular(40)),
+              child: Center(
+                child: Text(
+                  text,
+                  style: TextStyle(
+                    fontSize: variant == ButtonVariant.zero ? 30 : 34,
+                    fontWeight: FontWeight.w400,
+                    color: disabled ? _getDisabledTextColor() : _getTextColor(),
+                  ),
+                ),
+              ),
             ),
           ),
         ),

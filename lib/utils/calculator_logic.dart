@@ -27,6 +27,9 @@ class CalculatorLogic {
   CardSuit _selectedSuit = CardSuit.hearts;
   String _pendingText = '';
 
+  // Animation mode
+  bool _isAnimationEnabled = false;
+
   // 3 independent booleans
   bool _isBlocked = false;
   bool _isDivisionBlocked = false;
@@ -53,6 +56,7 @@ class CalculatorLogic {
   String get customText => _customText;
   CardSuit get selectedSuit => _selectedSuit;
   bool get showingText => _textResult.isNotEmpty;
+  bool get isAnimationEnabled => _isAnimationEnabled;
 
   String get displayText => _textResult;
 
@@ -67,6 +71,10 @@ class CalculatorLogic {
 
   void setCustomText(String text) {
     _customText = text;
+  }
+
+  void setAnimationEnabled(bool enabled) {
+    _isAnimationEnabled = enabled;
   }
 
   void setCardSuit(CardSuit suit) {
