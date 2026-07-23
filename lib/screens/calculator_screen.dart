@@ -264,7 +264,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                 child: CalculatorButton(
                   text: def['text'],
                   variant: def['variant'],
-                  disabled: isActive,
+                  disabled: false,
                   onPressed: () => _onButtonPressed(def['text']),
                   onLongPressStart: def['text'] == '%' ? _onPercentLongPressStart : (def['text'] == '+' ? _onPlusLongPressStart : null),
                   onLongPressEnd: def['text'] == '%' ? _onPercentLongPressEnd : (def['text'] == '+' ? _onPlusLongPressEnd : null),
