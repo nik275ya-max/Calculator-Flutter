@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../utils/calculator_logic.dart';
 import '../widgets/calculator_button.dart';
 import '../widgets/calculator_display.dart';
@@ -17,6 +18,7 @@ class CalculatorScreen extends StatefulWidget {
 class _CalculatorScreenState extends State<CalculatorScreen> {
   final CalculatorLogic _logic = CalculatorLogic();
   final SensorService _sensorService = SensorService();
+  static const _platform = MethodChannel('com.calculator/vibration');
   bool _showSettings = false;
   final TextEditingController _customNumberController = TextEditingController();
   final TextEditingController _customTextController = TextEditingController();
@@ -68,13 +70,20 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     super.dispose();
   }
 
+  void _vibrate() {
+    _platform.invokeMethod('vibrate');
+  }
+
   void _updateState() { setState(() {}); }
 
   void _onButtonPressed(String text) {
     if (_gravityState != GravityAnimState.normal) return;
     switch (text) {
       case 'AC': _logic.clear(); break;
-      case '+/-': _logic.toggleSign(); break;
+      case '+/-':
+        _vibrate();
+        _logic.toggleSign();
+        break;
       case '%': break;
       case '+': _logic.performOperation('+'); break;
       case '-': _logic.performOperation('-'); break;
@@ -91,6 +100,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   void _onPlusLongPressEnd() { _logic.cancelPlusLongPress(); }
 
   void _onPercentLongPressStart() {
+    _vibrate();
     _percentLongPressTimer = Timer(const Duration(seconds: 2), () {
       setState(() { _showSettings = true; });
     });

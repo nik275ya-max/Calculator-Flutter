@@ -6,6 +6,7 @@ class SensorService {
   StreamSubscription? _accelerometerSubscription;
   bool _enabled = false;
   DateTime? _lastShakeTime;
+  DateTime? _startedAt;
   double _prevX = 0;
   double _prevY = 0;
   double _prevZ = 0;
@@ -17,8 +18,17 @@ class SensorService {
     if (_enabled) return;
     _enabled = true;
     _lastShakeTime = null;
+    _startedAt = DateTime.now();
 
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
+      if (_startedAt != null && DateTime.now().difference(_startedAt!) < const Duration(seconds: 1)) {
+        _prevX = event.x;
+        _prevY = event.y;
+        _prevZ = event.z;
+        return;
+      }
+      _startedAt = null;
+
       final dx = (event.x - _prevX).abs();
       final dy = (event.y - _prevY).abs();
       final dz = (event.z - _prevZ).abs();
