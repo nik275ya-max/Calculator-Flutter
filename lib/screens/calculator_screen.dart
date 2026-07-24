@@ -55,6 +55,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     _logic.setCustomNumber(false, '');
     _logic.onStateChanged = () { if (mounted) setState(() {}); };
     _sensorService.onShakeDetected = _onShakeDetected;
+    _sensorService.setThreshold(_logic.shakeThreshold);
   }
 
   @override
@@ -221,9 +222,37 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
             const SizedBox(height: 32),
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               const Expanded(child: Text('\u0410\u043D\u0438\u043C\u0430\u0446\u0438\u044F', style: TextStyle(color: Colors.white, fontSize: 18))),
-              Switch(value: _logic.isAnimationEnabled, onChanged: (v) { _logic.setAnimationEnabled(v); if (v) { _sensorService.startListening(); } else { _sensorService.stopListening(); } _updateState(); }, activeThumbColor: const Color(0xFFF97316), activeTrackColor: const Color(0xFFF97316)),
+              Switch(value: _logic.isAnimationEnabled, onChanged: (v) { _logic.setAnimationEnabled(v); if (v) { _sensorService.setThreshold(_logic.shakeThreshold); _sensorService.startListening(); } else { _sensorService.stopListening(); } _updateState(); }, activeThumbColor: const Color(0xFFF97316), activeTrackColor: const Color(0xFFF97316)),
             ]),
             const Text('\u041F\u043E\u0442\u0440\u044F\u0441\u0438\u0442\u0435 \u0442\u0435\u043B\u0435\u0444\u043E\u043D \u2014 \u043A\u043D\u043E\u043F\u043A\u0438 \u0443\u043F\u0430\u0434\u0443\u0442. \u041D\u0430\u0436\u043C\u0438\u0442\u0435 \u043D\u0430 \u044D\u043A\u0440\u0430\u043D \u2014 \u0432\u0435\u0440\u043D\u0443\u0442\u0441\u044F', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
+            if (_logic.isAnimationEnabled) ...[
+              const SizedBox(height: 24),
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                const Expanded(child: Text('\u0427\u0443\u0432\u0441\u0442\u0432\u0438\u0442\u0435\u043B\u044C\u043D\u043E\u0441\u0442\u044C \u0442\u0440\u044F\u0441\u043A\u0438', style: TextStyle(color: Colors.white, fontSize: 18))),
+                Text(_logic.shakeThreshold.round().toString(), style: const TextStyle(color: Color(0xFFF97316), fontSize: 16)),
+              ]),
+              const Text('\u041C\u0435\u043D\u044C\u0448\u0435 \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u2014 \u043B\u0435\u0433\u0447\u0435 \u0441\u0440\u0430\u0431\u0430\u0442\u044B\u0432\u0430\u0435\u0442', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14)),
+              const SizedBox(height: 8),
+              SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: const Color(0xFFF97316),
+                  inactiveTrackColor: const Color(0xFF374151),
+                  thumbColor: const Color(0xFFF97316),
+                  overlayColor: const Color(0x29F97316),
+                ),
+                child: Slider(
+                  value: _logic.shakeThreshold,
+                  min: 1,
+                  max: 10,
+                  divisions: 9,
+                  onChanged: (v) {
+                    _logic.setShakeThreshold(v);
+                    _sensorService.setThreshold(v * 5);
+                    _updateState();
+                  },
+                ),
+              ),
+            ],
           ]))),
         ]),
       ),

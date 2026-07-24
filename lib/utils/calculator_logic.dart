@@ -29,6 +29,7 @@ class CalculatorLogic {
 
   // Animation mode
   bool _isAnimationEnabled = false;
+  double _shakeThreshold = 7;
 
   // 3 independent booleans
   bool _isBlocked = false;
@@ -57,6 +58,7 @@ class CalculatorLogic {
   CardSuit get selectedSuit => _selectedSuit;
   bool get showingText => _textResult.isNotEmpty;
   bool get isAnimationEnabled => _isAnimationEnabled;
+  double get shakeThreshold => _shakeThreshold;
 
   String get displayText => _textResult;
 
@@ -75,6 +77,10 @@ class CalculatorLogic {
 
   void setAnimationEnabled(bool enabled) {
     _isAnimationEnabled = enabled;
+  }
+
+  void setShakeThreshold(double threshold) {
+    _shakeThreshold = threshold;
   }
 
   void setCardSuit(CardSuit suit) {

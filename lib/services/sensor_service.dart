@@ -9,6 +9,7 @@ class SensorService {
   double _prevX = 0;
   double _prevY = 0;
   double _prevZ = 0;
+  double _threshold = 35;
 
   Function()? onShakeDetected;
 
@@ -26,7 +27,7 @@ class SensorService {
       _prevZ = event.z;
 
       final delta = dx + dy + dz;
-      if (delta > 15) {
+      if (delta > _threshold) {
         final now = DateTime.now();
         if (_lastShakeTime == null || now.difference(_lastShakeTime!) > const Duration(seconds: 3)) {
           _lastShakeTime = now;
@@ -41,6 +42,10 @@ class SensorService {
     _lastShakeTime = null;
     _accelerometerSubscription?.cancel();
     _accelerometerSubscription = null;
+  }
+
+  void setThreshold(double threshold) {
+    _threshold = threshold;
   }
 
   void dispose() {
